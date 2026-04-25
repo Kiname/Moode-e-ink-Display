@@ -48,7 +48,10 @@ Copia la carpeta /Screen del repositorio en /home/"USER"
 
 ### **4.1. Ejecucion local**
 
-El script puede ejecutarse localmente desde un terminal SSH con python3 /Screen/lector_lcd.py
+El script puede ejecutarse localmente desde un terminal SSH con:
+```bash
+python3 /home/"USER"/Screen/lector_lcd.py
+```
 Ctrl+C sale del script y borra la pantalla
 
 ### **4.2. Ejecucion como servicio**
