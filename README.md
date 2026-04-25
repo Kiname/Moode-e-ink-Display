@@ -46,6 +46,28 @@ Dentro de Moode es necesario activar LCD UPDATE dentro de la configuracion de pe
 ## **4\. Funcionamiento de Script**
 Copia la carpeta /Screen del repositorio en /home/"USER"
 
+edita el archivo lector_lcd.py con
+
+```bash
+nano ./Screen/lector_lcd.py
+```
+
+Al comienzo del archivo lector_lcd.py cambia en las lineas:
+
+```bash
+ARCHIVO = "/home/kiko/lcd.txt"
+RUTA_FUENTE = "/home/kiko/Screen/Font.ttc" 
+RUTA_IMAGEN_STOP = "/home/kiko/Screen/kc.bmp"
+```
+kiko (mi usuario) por el tuyo
+
+debe quedarte algo asi:
+```bash
+ARCHIVO = "/home/moode/lcd.txt"
+RUTA_FUENTE = "/home/moode/Screen/Font.ttc" 
+RUTA_IMAGEN_STOP = "/home/moode/Screen/kc.bmp"
+```
+
 ### **4.1. Ejecucion local**
 
 El script puede ejecutarse localmente desde un terminal SSH con:
