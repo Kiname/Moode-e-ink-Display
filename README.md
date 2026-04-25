@@ -145,6 +145,6 @@ journalctl -u pantalla_lcd.service -f
 
 ## **5\. Personalizacion**
 
-Modifica el archivo kc.bmp a tu gusto, debe ser una imagen BMP monocromo con un tamaño de 255x122 pixel.
+Modifica el archivo kc.bmp a tu gusto, debe ser una imagen BMP monocromo con un tamaño de 250x122 pixel.
 
 
