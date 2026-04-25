@@ -33,3 +33,21 @@ Para minimizar el desgaste de la tarjeta microSD y mejorar la velocidad de respu
 * **Precarga de Fuentes:** Los objetos ImageFont se cargan en la RAM al inicio del script en un rango de tamaños (10 a 35).  
 * **Caché de Imágenes:** La imagen kc.bmp se procesa y almacena en memoria una sola vez.  
 * **Frecuencia de Lectura:** El script monitoriza el archivo lcd.txt cada 1 segundo (time.sleep(1)) comparando la fecha de modificación (mtime).
+
+## **3\. Configuracion Moode**
+
+Dentro de Moode es necesario activar LCD UPDATE dentro de la configuracion de perifericos, esto generara el archivo LCD.txt en /home/"USER"/, es necesario activar esto antes de ejecutar el script.
+
+## **4\. Funcionamiento de Script
+
+### **4.1. Ejecucion local
+
+El script puede ejecutarse localmente desde un terminal SSH con python3 /Screen/lector_lcd.py
+Ctrl+C sale del script y borra la pantalla
+
+### **4.2. Ejecucion como servicio
+
+Tambien es posible ejecutarlo como servicio.
+
+
+Tambien es posible 
