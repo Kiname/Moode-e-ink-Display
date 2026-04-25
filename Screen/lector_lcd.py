@@ -14,7 +14,7 @@ import logging
 import signal
 import atexit
 
-# NUEVAS IMPORTACIONES PARA OPTIMIZACIÓN (WATCHDOG)
+# NUEVAS IMPORTACIONES PARA EL SISTEMA DE EVENTOS
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -30,16 +30,18 @@ RUTA_IMAGEN_STOP = "/home/kiko/Screen/kc.bmp"
 
 ANCHO_PANTALLA, ALTO_PANTALLA = 250, 122
 
-# Añadimos "file" y "outrate" a la lista de etiquetas que queremos leer
 ETIQUETAS = {"artist", "album", "title", "encoded", "bitrate", "state", "file", "outrate"}
 
-# --- MEMORIA CACHÉ ---
+# --- MEMORIA CACHÉ Y ESTADOS ---
 FUENTES = {}
 IMAGEN_STOP_ROTADA = None
 
-# Variables de control de refresco (Optimizadas para el arranque)
-contador_parciales = 10  # Forzamos que la primera carga sea FULL_UPDATE
-estado_anterior = None   # Iniciamos en None para forzar actualización inicial
+# Forzamos que la primera actualización sea siempre total y dibuje la pantalla
+contador_parciales = 6  
+estado_anterior = "arranque" 
+
+# NUEVO: Controlador de 3 estados para el Pixel Shifting (0: Centro, 1: Arriba, 2: Abajo)
+estado_posicion_lineas = 0 
 
 def inicializar_recursos():
     global IMAGEN_STOP_ROTADA
@@ -74,24 +76,30 @@ def leer_datos():
     return datos
 
 def actualizar_pantalla(datos):
-    global contador_parciales, estado_anterior
+    global contador_parciales, estado_anterior, estado_posicion_lineas
     
     epd = epd2in13_V2.EPD()
     estado_actual = datos.get("state", "").lower()
 
-    # --- LÓGICA DE STOP / PAUSE ---
     if estado_actual in ("stop", "pause"):
         if estado_anterior not in ("stop", "pause"):
-            logging.info("-> Modo STOP (FULL_UPDATE)")
+            logging.info("-> Modo STOP (FULL_UPDATE con imagen BMP)")
             epd.init(epd.FULL_UPDATE)
             if IMAGEN_STOP_ROTADA:
                 epd.display(epd.getbuffer(IMAGEN_STOP_ROTADA))
-            epd.sleep()
+            epd.sleep() 
         
         estado_anterior = estado_actual
         return
 
-    # Creamos el lienzo
+    # Determinamos por adelantado si esta vuelta será un FULL_UPDATE
+    venimos_de_stop = estado_anterior in ("stop", "pause")
+    es_full_update = venimos_de_stop or contador_parciales >= 6
+
+    # Si va a ser un full update, rotamos la posición de las líneas (0 -> 1 -> 2 -> 0)
+    if es_full_update:
+        estado_posicion_lineas = (estado_posicion_lineas + 1) % 3
+
     image = Image.new('1', (ANCHO_PANTALLA, ALTO_PANTALLA), 255)
     draw = ImageDraw.Draw(image)
 
@@ -108,37 +116,36 @@ def actualizar_pantalla(datos):
 
     artista = datos.get("artist", "")
     es_radio = "radio station" in artista.lower()
-    
-    # NUEVO: Detección de Bluetooth
     es_bluetooth = datos.get("file", "").lower() == "bluetooth active"
 
-    # --- DIBUJO DE LÍNEAS DIVISORIAS ---
-    draw.line([(15, 36), (235, 36)], fill=0, width=2)     
-    draw.line([(15, 92), (235, 92)], fill=0, width=2)    
+    # --- NUEVO SISTEMA DE LÍNEAS ANTI-GHOSTING (3 POSICIONES) ---
+    if estado_posicion_lineas == 0:
+        offset_y = 0   # Posición central original
+    elif estado_posicion_lineas == 1:
+        offset_y = -2  # 2 píxeles hacia arriba
+    else:
+        offset_y = 2   # 2 píxeles hacia abajo
 
-    # --- TEXTOS ---
+    # Dibujamos siempre líneas simples de ancho 1, aplicando el desplazamiento
+    draw.line([(15, 36 + offset_y), (235, 36 + offset_y)], fill=0, width=1)     
+    draw.line([(15, 92 + offset_y), (235, 92 + offset_y)], fill=0, width=1)    
+    # -------------------------------------------------------------
+
     if es_bluetooth:
-        # MODO BLUETOOTH
         f_bt, w_bt = obtener_fuente("Bluetooth", 28) 
         draw.text(((ANCHO_PANTALLA - w_bt) // 2, 2), "Bluetooth", font=f_bt, fill=0)
-        
-        # Info Técnica Bluetooth (Outrate)
         outrate = datos.get("outrate", "")
         if outrate:
             f_out, w_out = obtener_fuente(outrate, 16) 
             draw.text(((ANCHO_PANTALLA - w_out) // 2, 98), outrate, font=f_out, fill=0)
 
     elif es_radio:
-        # MODO RADIO
         estacion = datos.get("album", "")
         f_est, w_est = obtener_fuente(estacion, 28) 
         draw.text(((ANCHO_PANTALLA - w_est) // 2, 2), estacion, font=f_est, fill=0)
-
         titulo = datos.get("title", "Sintonizando...")
         f_tit, w_tit = obtener_fuente(titulo, 24) 
         draw.text(((ANCHO_PANTALLA - w_tit) // 2, 55), titulo, font=f_tit, fill=0)
-        
-        # Info Técnica Radio
         enc = datos.get("encoded", "")
         bit = datos.get("bitrate", "")
         info_tec = f"{enc} | {bit}" if (enc and bit) else f"{enc}{bit}"
@@ -147,19 +154,14 @@ def actualizar_pantalla(datos):
             draw.text(((ANCHO_PANTALLA - w_tec) // 2, 98), info_tec, font=f_tec, fill=0)
 
     else:
-        # MODO MÚSICA NORMAL
         f_art, w_art = obtener_fuente(artista, 28) 
         draw.text(((ANCHO_PANTALLA - w_art) // 2, 2), artista, font=f_art, fill=0)
-
         album = datos.get("album", "")
         f_alb, w_alb = obtener_fuente(album, 20) 
         draw.text(((ANCHO_PANTALLA - w_alb) // 2, 42), album, font=f_alb, fill=0)
-
         titulo = datos.get("title", "")
         f_tit, w_tit = obtener_fuente(titulo, 24) 
         draw.text(((ANCHO_PANTALLA - w_tit) // 2, 64), titulo, font=f_tit, fill=0)
-        
-        # Info Técnica Música
         enc = datos.get("encoded", "")
         bit = datos.get("bitrate", "")
         info_tec = f"{enc} | {bit}" if (enc and bit) else f"{enc}{bit}"
@@ -167,40 +169,42 @@ def actualizar_pantalla(datos):
             f_tec, w_tec = obtener_fuente(info_tec, 16) 
             draw.text(((ANCHO_PANTALLA - w_tec) // 2, 98), info_tec, font=f_tec, fill=0)
 
-    # Preparamos el buffer rotado
-    buffer_pantalla = epd.getbuffer(image.rotate(180))
+    buffer_imagen = epd.getbuffer(image.rotate(180))
 
-    # --- ESTRATEGIA DE REFRESCO (Full vs Parcial) ---
-    venimos_de_stop = estado_anterior in ("stop", "pause") or estado_anterior is None
-
-    if venimos_de_stop or contador_parciales >= 10:
-        logging.info("-> Limpieza Total (FULL_UPDATE)")
+    if es_full_update:
+        logging.info(f"-> Limpieza Total (FULL_UPDATE) + Líneas en estado {estado_posicion_lineas}")
         epd.init(epd.FULL_UPDATE)
-        epd.displayPartBaseImage(buffer_pantalla) 
+        epd.displayPartBaseImage(buffer_imagen) 
         contador_parciales = 0
     else:
-        logging.info(f"-> Actualización Parcial (PART_UPDATE) [{contador_parciales}/10]")
+        logging.info(f"-> Actualización Parcial (PART_UPDATE) - Refresco {contador_parciales}/6")
         epd.init(epd.PART_UPDATE)
-        epd.displayPartial(buffer_pantalla)
+        epd.displayPartial(buffer_imagen)
         contador_parciales += 1
 
     estado_anterior = estado_actual
 
-# --- GESTOR DE EVENTOS PARA EL ARCHIVO ---
+
+# --- NUEVA CLASE PARA GESTIONAR EVENTOS DE ARCHIVO ---
 class GestorCambiosLCD(FileSystemEventHandler):
     def __init__(self):
         self.datos_ant = {}
 
     def on_modified(self, event):
+        # Asegurarnos de que reaccionamos al archivo correcto, no a la carpeta entera
         if not event.is_directory and event.src_path == ARCHIVO:
-            time.sleep(0.1) # Pausa técnica para asegurar escritura completa
+            # Pausa de 0.1s muy importante: Evita que leamos el archivo justo 
+            # en el microsegundo en el que el otro programa lo está escribiendo.
+            time.sleep(0.1) 
             try:
                 datos_nuevos = leer_datos()
+                # Solo actualizamos si el contenido REALMENTE ha cambiado
                 if datos_nuevos and datos_nuevos != self.datos_ant:
                     actualizar_pantalla(datos_nuevos)
                     self.datos_ant = datos_nuevos
             except Exception as e:
                 logging.error(f"Error procesando el evento: {e}")
+
 
 # --- RUTINA DE VIDA DEL SERVICIO ---
 limpieza_realizada = False
@@ -208,42 +212,56 @@ def apagar_seguro(*args):
     global limpieza_realizada
     if limpieza_realizada: return
     try:
-        logging.info("Cerrando servicio y limpiando pantalla...")
+        logging.info("Apagando pantalla: Iniciando ciclo de limpieza profunda antighosting...")
         epd = epd2in13_V2.EPD()
         epd.init(epd.FULL_UPDATE)
-        epd.Clear(0xFF)
+        
+        # --- CICLO DE LIMPIEZA E-INK ---
+        # Forzamos los pigmentos a moverse de un extremo a otro
+        epd.Clear(0xFF) # 1. Forzar todo a Blanco
+        time.sleep(0.5)
+        epd.Clear(0x00) # 2. Forzar todo a Negro (arrastra las sombras atascadas)
+        time.sleep(0.5)
+        epd.Clear(0xFF) # 3. Volver a dejar todo en Blanco limpio
+        
         epd.sleep()
         epd2in13_V2.epdconfig.module_exit(cleanup=True)
         limpieza_realizada = True
-    except: pass
+        logging.info("Pantalla limpia y apagada correctamente.")
+    except Exception as e: 
+        logging.error(f"Error al limpiar la pantalla al apagar: {e}")
+        pass
     sys.exit(0)
+
 
 def main():
     inicializar_recursos()
     
     gestor_eventos = GestorCambiosLCD()
 
-    # Lectura inicial al arrancar el script
+    # Hacemos una primera lectura manual al iniciar por si el reproductor ya estaba sonando
     if os.path.exists(ARCHIVO):
-        logging.info(f"Cargando estado inicial de {ARCHIVO}...")
         datos_iniciales = leer_datos()
         if datos_iniciales:
             actualizar_pantalla(datos_iniciales)
             gestor_eventos.datos_ant = datos_iniciales
-    else:
-        logging.warning(f"No se detectó el archivo {ARCHIVO} en el inicio.")
 
-    # Configuración del Observer (Watchdog)
+    # Configuramos al vigía (Observer) de Watchdog
+    directorio_vigilado = os.path.dirname(ARCHIVO)
     observer = Observer()
-    observer.schedule(gestor_eventos, path=os.path.dirname(ARCHIVO), recursive=False)
+    # Le decimos que vigile la carpeta, pasando nuestro Gestor cuando detecte algo
+    observer.schedule(gestor_eventos, path=directorio_vigilado, recursive=False)
     observer.start()
     
-    logging.info("Vigilancia de eventos activada. Modo bajo consumo.")
+    logging.info(f"Vigilancia activa por eventos en: {ARCHIVO}")
 
     try:
         while True:
-            time.sleep(3600) # El hilo principal duerme una hora para liberar CPU
+            # El hilo principal se queda "congelado" cediendo la CPU.
+            # Watchdog está trabajando en un hilo secundario consumiendo 0%.
+            time.sleep(3600) 
     except KeyboardInterrupt:
+        logging.info("Interrupción por teclado detectada...")
         observer.stop()
     
     observer.join()
