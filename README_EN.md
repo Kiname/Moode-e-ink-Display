@@ -3,7 +3,7 @@
 
 # **Technical Guide: E-Ink Display and Audio Configuration and Optimization on Raspberry Pi 4**
 
-This document details the troubleshooting of hardware conflicts and the evolutionary development of a display system for an audio player based on Raspberry Pi 4, using a DAC Pro and a 2.13-inch Waveshare E-Paper display.
+This document details the troubleshooting of hardware conflicts and the evolutionary development of a display system for an audio player based on Raspberry Pi 4, using a DAC Pro and a 2.13-inch Waveshare E-Paper display V2.
 
 ## **1. Hardware Conflict Resolution (GPIO)**
 
