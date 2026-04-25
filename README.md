@@ -1,6 +1,6 @@
 ![E-ink Display](e-ink_display.jpg)
 
-# **English description here: ![README_EN.md](README_EN.md)**
+# **English description here: [README_EN.md](README_EN.md)**
 # **Guía Técnica: Configuración y Optimización de Pantalla E-Ink y Audio en Raspberry Pi 4**
 
 Este documento detalla la resolución de conflictos de hardware y el desarrollo evolutivo de un sistema de visualización para un reproductor de audio basado en Raspberry Pi 4, utilizando un DAC Pro y una pantalla Waveshare E-Paper V2 de 2.13 pulgadas.
