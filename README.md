@@ -11,11 +11,12 @@ El problema inicial consistía en la detención del sonido al ejecutar el script
 
 * **Raspberry DAC Pro:** Como reloj de bits (BCLK) para el bus I2S.  
 * **Waveshare E-Paper:** Configurado por defecto como pin de alimentación (PWR\_PIN) en la librería epdconfig.py.
-* Estos pines solamente serian necesarios en el caso de usar mas de una tarjeta en el bus I2C.
+
 
 ### **Solución Técnica**
 
 Para solucionar el conflicto de hardware, se modificó el archivo epdconfig.py **eliminando por completo las referencias y el uso del CS\_PIN y el PWR\_PIN** de todo el código. Al no inicializar ni utilizar estos pines desde la librería de la pantalla, se liberó por completo el bus I2S, permitiendo que la tarjeta de sonido Raspberry DAC Pro funcionara sin interrupciones junto con la pantalla E-Paper.
+Estos pines solamente serian necesarios en el caso de usar mas de una tarjeta en el bus I2C.
 
 ## **2\. Desarrollo del Script de Control (lector\_lcd.py)**
 
