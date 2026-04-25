@@ -49,6 +49,29 @@ Within Moode, it is necessary to enable LCD UPDATE in the peripherals configurat
 ## **4. Script Operation**
 Copy the /Screen folder from the repository to /home/"USER"
 
+edit the file lector_lcd.py
+
+```bash
+nano ./Screen/lector_lcd.py
+```
+
+At the begining of lector_lcd.py change the following lines:
+
+```bash
+ARCHIVO = "/home/kiko/lcd.txt"
+RUTA_FUENTE = "/home/kiko/Screen/Font.ttc" 
+RUTA_IMAGEN_STOP = "/home/kiko/Screen/kc.bmp"
+```
+kiko (mi user) for yours
+
+something like this:
+```bash
+ARCHIVO = "/home/moode/lcd.txt"
+RUTA_FUENTE = "/home/moode/Screen/Font.ttc" 
+RUTA_IMAGEN_STOP = "/home/moode/Screen/kc.bmp"
+```
+
+
 ### **4.1. Local Execution**
 
 The script can be run locally from an SSH terminal with:
