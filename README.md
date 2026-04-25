@@ -1,4 +1,4 @@
-![Texto alternativo de la imagen](ruta/o/url/de/la/imagen.png)
+![E-ink Display](IMG_20260424_141746.jpg)
 
 
 # **Guía Técnica: Configuración y Optimización de Pantalla E-Ink y Audio en Raspberry Pi 4**
