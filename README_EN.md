@@ -23,17 +23,13 @@ The script was evolved to integrate various aesthetic and operational functional
 
 ### **2.1. Implemented Functionalities**
 
+
 | Functionality | Description |
-
 | :---- | :---- |
-
 | **180° Rotation** | Software adjustment (.rotate(180)) to adapt the physical orientation of the mount. |
-
-**Stop/Pause Mode** | Display of a custom image (kc.bmp) when the player is not in "play" mode. |
-
-**Minimalist Design** | Removal of labels (Artist:, Album:) to show only the values, centered and divided by horizontal lines. |
-
-**Bluetooth Support** | Automatic detection of the key file=Bluetooth Active to display a specific interface with the outrate. |
+|**Stop/Pause Mode** | Display of a custom image (kc.bmp) when the player is not in "play" mode. |
+|**Minimalist Design** | Removal of labels (Artist:, Album:) to show only the values, centered and divided by horizontal lines. |
+|**Bluetooth Support** | Automatic detection of the key file=Bluetooth Active to display a specific interface with the outrate. |
 
 ### **2.2. Performance Optimization**
 
@@ -125,4 +121,4 @@ journalctl -u pantalla_lcd.service -f
 
 ## **5. Customization**
 
-Modify the kc.bmp file to your liking. It must be a monochrome BMP image with a size of d
+Modify the kc.bmp file to your liking. It must be a monochrome BMP image with a size of 255x122 pixel.
