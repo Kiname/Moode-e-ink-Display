@@ -49,5 +49,57 @@ Ctrl+C sale del script y borra la pantalla
 
 Tambien es posible ejecutarlo como servicio.
 
+Pasos para crear el Servicio de Systemd
+1. Detén el script si lo tienes corriendo. (Presiona Ctrl+C).
 
-Tambien es posible 
+2. Crea el archivo del servicio:
+Abre tu terminal y ejecuta este comando para crear un archivo de configuración nuevo:
+
+Bash
+sudo nano /etc/systemd/system/pantalla_lcd.service
+3. Pega la configuración:
+Copia y pega el siguiente texto en ese archivo. (He asumido que tu script se llama lector_lcd.py y está en /home/kiko/. Si el archivo en el que guardaste el código de Python se llama distinto, cambia la línea ExecStart).
+
+Ini, TOML
+[Unit]
+Description=Monitor de Pantalla E-Paper LCD
+After=multi-user.target
+
+[Service]
+Type=simple
+User=kiko
+WorkingDirectory=/home/kiko
+# Cambia 'lector_lcd.py' por el nombre real de tu archivo python si es diferente
+ExecStart=/usr/bin/python3 /home/kiko/lector_lcd.py
+
+# Estas tres líneas son la magia para que le dé tiempo a limpiar la pantalla
+KillSignal=SIGTERM
+TimeoutStopSec=12
+SendSIGKILL=yes
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+4. Guarda y cierra:
+
+Presiona Ctrl + O (letra O, no cero) para guardar.
+
+Presiona Enter para confirmar.
+
+Presiona Ctrl + X para salir de nano.
+
+5. Activa y arranca el servicio:
+Ahora vamos a decirle a la Raspberry que lea este nuevo archivo, que lo arranque ahora mismo, y que lo arranque automáticamente cada vez que enciendas la máquina. Ejecuta estos tres comandos uno a uno:
+
+Bash
+sudo systemctl daemon-reload
+sudo systemctl enable pantalla_lcd.service
+sudo systemctl start pantalla_lcd.service
+¿Cómo saber si está funcionando?
+Como ahora corre en segundo plano de forma "invisible", si quieres ver los mensajes que antes te salían en la terminal (los INFO: Cambio detectado...), puedes usar este comando para ver el registro en tiempo real:
+
+Bash
+journalctl -u pantalla_lcd.service -f
+(Presiona Ctrl+C para salir de esa vista, el programa seguirá corriendo de fondo).
