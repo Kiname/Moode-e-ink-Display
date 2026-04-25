@@ -55,12 +55,13 @@ Pasos para crear el Servicio de Systemd
 Crea el archivo del servicio:
 Abre tu terminal y ejecuta este comando para crear un archivo de configuración nuevo:
 
+```bash
 sudo nano /etc/systemd/system/pantalla_lcd.service
-
+```
 Pega la configuración:
 Copia y pega el siguiente texto en ese archivo.
 
-
+```bash
 [Unit]
 Description=Monitor de Pantalla E-Paper LCD
 After=multi-user.target
@@ -82,7 +83,7 @@ RestartSec=3
 [Install]
 WantedBy=multi-user.target
 
-
+```
 Guarda y cierra:
 
 Presiona Ctrl + O (letra O, no cero) para guardar.
@@ -94,16 +95,16 @@ Presiona Ctrl + X para salir de nano.
 5. Activa y arranca el servicio:
 Ahora vamos a decirle a la Raspberry que lea este nuevo archivo, que lo arranque ahora mismo, y que lo arranque automáticamente cada vez que enciendas la máquina. Ejecuta estos tres comandos uno a uno:
 
-
+```bash
 sudo systemctl daemon-reload
 sudo systemctl enable pantalla_lcd.service
 sudo systemctl start pantalla_lcd.service
-
+```
 
 ¿Cómo saber si está funcionando?
 Como ahora corre en segundo plano de forma "invisible", si quieres ver los mensajes que antes te salían en la terminal (los INFO: Cambio detectado...), puedes usar este comando para ver el registro en tiempo real:
 
-
+```bash
 journalctl -u pantalla_lcd.service -f
-
+```
 (Presiona Ctrl+C para salir de esa vista, el programa seguirá corriendo de fondo).
