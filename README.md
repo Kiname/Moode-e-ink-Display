@@ -1,5 +1,10 @@
 ![E-ink Display](e-ink_display.jpg)
 
+# **UPDATE:**
+Este script es mas rapido y optimiza recursos al usar la libreria Watchdog en lugar de comprobar LCD.TXT cada segundo pero necesita la instalacion de esta libreria.
+```bash
+sudo apt install python3-watchdog
+```
 
 # **Guía Técnica: Configuración y Optimización de Pantalla E-Ink y Audio en Raspberry Pi 4**
 
