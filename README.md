@@ -39,6 +39,7 @@ Para minimizar el desgaste de la tarjeta microSD y mejorar la velocidad de respu
 Dentro de Moode es necesario activar LCD UPDATE dentro de la configuracion de perifericos, esto generara el archivo LCD.txt en /home/"USER"/, es necesario activar esto antes de ejecutar el script.
 
 ## **4\. Funcionamiento de Script**
+Copia la carpeta /Screen del repositorio en /home/"USER"
 
 ### **4.1. Ejecucion local**
 
