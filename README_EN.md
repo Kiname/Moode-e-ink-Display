@@ -104,8 +104,8 @@ After=multi-user.target
 
 [Service]
 Type=simple
-User=kiko
-WorkingDirectory=/home/kiko
+User=root
+WorkingDirectory=/home/USER
 ExecStart=/usr/bin/python3 /home/USER/Screen/lector_lcd.py
 
 KillSignal=SIGTERM
@@ -119,6 +119,8 @@ RestartSec=3
 WantedBy=multi-user.target
 
 ```
+Change USER by your user.
+
 Save and close:
 
 Press Ctrl + O (the letter O, not zero) to save.
