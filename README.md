@@ -69,10 +69,9 @@ After=multi-user.target
 Type=simple
 User=kiko
 WorkingDirectory=/home/kiko
-# Cambia 'lector_lcd.py' por el nombre real de tu archivo python si es diferente
 ExecStart=/usr/bin/python3 /home/USER/Screen/lector_lcd.py
 
-# Estas tres líneas son la magia para que le dé tiempo a limpiar la pantalla
+
 KillSignal=SIGTERM
 TimeoutStopSec=12
 SendSIGKILL=yes
