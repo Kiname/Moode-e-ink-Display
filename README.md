@@ -97,7 +97,8 @@ Presiona Enter para confirmar.
 
 Presiona Ctrl + X para salir de nano.
 
-5. Activa y arranca el servicio:
+Activa y arranca el servicio:
+
 Ahora vamos a decirle a la Raspberry que lea este nuevo archivo, que lo arranque ahora mismo, y que lo arranque automáticamente cada vez que enciendas la máquina. Ejecuta estos tres comandos uno a uno:
 
 ```bash
@@ -113,3 +114,9 @@ Como ahora corre en segundo plano de forma "invisible", si quieres ver los mensa
 journalctl -u pantalla_lcd.service -f
 ```
 (Presiona Ctrl+C para salir de esa vista, el programa seguirá corriendo de fondo).
+
+## **5\. Personalizacion**
+
+Modifica el archivo kc.bmp a tu gusto, debe ser una imagen BMP monocromo con un tamaño de 255x122 pixel.
+
+
