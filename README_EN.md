@@ -62,7 +62,7 @@ ARCHIVO = "/home/kiko/lcd.txt"
 RUTA_FUENTE = "/home/kiko/Screen/Font.ttc" 
 RUTA_IMAGEN_STOP = "/home/kiko/Screen/kc.bmp"
 ```
-kiko (mi user) for yours
+change kiko (my user) for yours
 
 something like this:
 ```bash
