@@ -50,14 +50,14 @@ Ctrl+C sale del script y borra la pantalla
 Tambien es posible ejecutarlo como servicio.
 
 Pasos para crear el Servicio de Systemd
-1. Detén el script si lo tienes corriendo. (Presiona Ctrl+C).
+ Detén el script si lo tienes corriendo. (Presiona Ctrl+C).
 
-2. Crea el archivo del servicio:
+Crea el archivo del servicio:
 Abre tu terminal y ejecuta este comando para crear un archivo de configuración nuevo:
 
 sudo nano /etc/systemd/system/pantalla_lcd.service
 
-4. Pega la configuración:
+Pega la configuración:
 Copia y pega el siguiente texto en ese archivo.
 
 
@@ -81,7 +81,9 @@ RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
-4. Guarda y cierra:
+
+
+Guarda y cierra:
 
 Presiona Ctrl + O (letra O, no cero) para guardar.
 
