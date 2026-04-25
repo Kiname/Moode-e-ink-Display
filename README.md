@@ -99,8 +99,8 @@ After=multi-user.target
 
 [Service]
 Type=simple
-User=kiko
-WorkingDirectory=/home/kiko
+User=root
+WorkingDirectory=/home/USER
 ExecStart=/usr/bin/python3 /home/USER/Screen/lector_lcd.py
 
 
@@ -115,6 +115,8 @@ RestartSec=3
 WantedBy=multi-user.target
 
 ```
+Cambia USER por tu usuario.
+
 Guarda y cierra:
 
 Presiona Ctrl + O (letra O, no cero) para guardar.
