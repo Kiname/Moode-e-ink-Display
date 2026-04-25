@@ -37,7 +37,7 @@ FUENTES = {}
 IMAGEN_STOP_ROTADA = None
 
 # Forzamos que la primera actualización sea siempre total y dibuje la pantalla
-contador_parciales = 6  
+contador_parciales = 5  
 estado_anterior = "arranque" 
 
 # NUEVO: Controlador de 3 estados para el Pixel Shifting (0: Centro, 1: Arriba, 2: Abajo)
@@ -94,7 +94,7 @@ def actualizar_pantalla(datos):
 
     # Determinamos por adelantado si esta vuelta será un FULL_UPDATE
     venimos_de_stop = estado_anterior in ("stop", "pause")
-    es_full_update = venimos_de_stop or contador_parciales >= 6
+    es_full_update = venimos_de_stop or contador_parciales >= 5
 
     # Si va a ser un full update, rotamos la posición de las líneas (0 -> 1 -> 2 -> 0)
     if es_full_update:
@@ -177,7 +177,7 @@ def actualizar_pantalla(datos):
         epd.displayPartBaseImage(buffer_imagen) 
         contador_parciales = 0
     else:
-        logging.info(f"-> Actualización Parcial (PART_UPDATE) - Refresco {contador_parciales}/6")
+        logging.info(f"-> Actualización Parcial (PART_UPDATE) - Refresco {contador_parciales}/5")
         epd.init(epd.PART_UPDATE)
         epd.displayPartial(buffer_imagen)
         contador_parciales += 1
