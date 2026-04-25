@@ -33,16 +33,3 @@ Para minimizar el desgaste de la tarjeta microSD y mejorar la velocidad de respu
 * **Precarga de Fuentes:** Los objetos ImageFont se cargan en la RAM al inicio del script en un rango de tamaños (10 a 35).  
 * **Caché de Imágenes:** La imagen kc.bmp se procesa y almacena en memoria una sola vez.  
 * **Frecuencia de Lectura:** El script monitoriza el archivo lcd.txt cada 1 segundo (time.sleep(1)) comparando la fecha de modificación (mtime).
-
-## **3\. Gestión de la Pantalla de Tinta Electrónica**
-
-Debido a la naturaleza de la tecnología E-Ink, se evaluaron dos métodos de actualización:
-
-1. **Actualización Parcial (Partial Refresh):** Aunque es más rápida y sin parpadeo, se descartó debido al *ghosting* (emborronamiento) que dificultaba la lectura de los textos.  
-2. **Actualización Total (Full Update):** Se seleccionó como método definitivo para garantizar un contraste óptimo y nitidez absoluta en cada cambio de información, a pesar del parpadeo característico.
-
-## **4\. Código Final Optimizado**
-
-El sistema final utiliza un bucle de monitorización que detecta cambios en las etiquetas artist, album, title, encoded, bitrate, state, file y outrate, aplicando un diseño de secciones diferenciadas por líneas decorativas.
-
-*Documento actualizado para reflejar la solución exacta de eliminación de pines (CS\_PIN y PWR\_PIN).*
