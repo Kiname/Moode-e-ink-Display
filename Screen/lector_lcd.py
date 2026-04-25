@@ -20,9 +20,13 @@ ANCHO_PANTALLA, ALTO_PANTALLA = 250, 122
 # Añadimos "file" y "outrate" a la lista de etiquetas que queremos leer
 ETIQUETAS = {"artist", "album", "title", "encoded", "bitrate", "state", "file", "outrate"}
 
-# --- MEMORIA CACHÉ ---
+# --- MEMORIA CACHÉ Y ESTADOS ---
 FUENTES = {}
 IMAGEN_STOP_ROTADA = None
+
+# NUEVO: Variables para controlar la lógica de refresco
+contador_parciales = 0
+estado_anterior = "stop" # Asumimos "stop" inicial para forzar un FULL_UPDATE en la primera canción
 
 def inicializar_recursos():
     global IMAGEN_STOP_ROTADA
@@ -57,21 +61,28 @@ def leer_datos():
     return datos
 
 def actualizar_pantalla(datos):
-    epd = epd2in13_V2.EPD()
+    global contador_parciales, estado_anterior
     
-    # Mantenemos el FULL_UPDATE para máxima nitidez
-    logging.info("-> Limpieza Total (FULL_UPDATE)")
-    epd.init(epd.FULL_UPDATE)
-    epd.Clear(0xFF)
+    epd = epd2in13_V2.EPD()
+    estado_actual = datos.get("state", "").lower()
 
-    estado = datos.get("state", "").lower()
-
-    if estado in ("stop", "pause"):
-        if IMAGEN_STOP_ROTADA:
-            epd.display(epd.getbuffer(IMAGEN_STOP_ROTADA))
-        epd.sleep()
+    # --- CASO 1: MODO STOP / PAUSA ---
+    if estado_actual in ("stop", "pause"):
+        if estado_anterior not in ("stop", "pause"):
+            # Solo refrescamos si acabamos de cambiar a estado STOP
+            logging.info("-> Modo STOP (FULL_UPDATE con imagen BMP)")
+            epd.init(epd.FULL_UPDATE)
+            if IMAGEN_STOP_ROTADA:
+                epd.display(epd.getbuffer(IMAGEN_STOP_ROTADA))
+            
+            # SOLO dormimos la pantalla cuando está en STOP para ahorrar energía
+            # y proteger el panel a largo plazo.
+            epd.sleep() 
+        
+        estado_anterior = estado_actual
         return
 
+    # --- PREPARACIÓN DE LA IMAGEN DE REPRODUCCIÓN ---
     image = Image.new('1', (ANCHO_PANTALLA, ALTO_PANTALLA), 255)
     draw = ImageDraw.Draw(image)
 
@@ -88,30 +99,23 @@ def actualizar_pantalla(datos):
 
     artista = datos.get("artist", "")
     es_radio = "radio station" in artista.lower()
-    
-    # NUEVO: Detección de Bluetooth
     es_bluetooth = datos.get("file", "").lower() == "bluetooth active"
 
-    # --- DIBUJO DE LÍNEAS DIVISORIAS ---
+    # Líneas divisorias
     draw.line([(15, 36), (235, 36)], fill=0, width=2)     
     draw.line([(15, 92), (235, 92)], fill=0, width=2)    
 
-    # --- TEXTOS ---
+    # Textos
     if es_bluetooth:
-        # MODO BLUETOOTH
         f_bt, w_bt = obtener_fuente("Bluetooth", 28) 
         draw.text(((ANCHO_PANTALLA - w_bt) // 2, 2), "Bluetooth", font=f_bt, fill=0)
         
-        # La sección central (Álbum/Título) queda vacía, no dibujamos nada.
-        
-        # Info Técnica Bluetooth (Outrate)
         outrate = datos.get("outrate", "")
         if outrate:
             f_out, w_out = obtener_fuente(outrate, 16) 
             draw.text(((ANCHO_PANTALLA - w_out) // 2, 98), outrate, font=f_out, fill=0)
 
     elif es_radio:
-        # MODO RADIO
         estacion = datos.get("album", "")
         f_est, w_est = obtener_fuente(estacion, 28) 
         draw.text(((ANCHO_PANTALLA - w_est) // 2, 2), estacion, font=f_est, fill=0)
@@ -120,7 +124,6 @@ def actualizar_pantalla(datos):
         f_tit, w_tit = obtener_fuente(titulo, 24) 
         draw.text(((ANCHO_PANTALLA - w_tit) // 2, 55), titulo, font=f_tit, fill=0)
         
-        # Info Técnica Radio
         enc = datos.get("encoded", "")
         bit = datos.get("bitrate", "")
         info_tec = f"{enc} | {bit}" if (enc and bit) else f"{enc}{bit}"
@@ -129,7 +132,6 @@ def actualizar_pantalla(datos):
             draw.text(((ANCHO_PANTALLA - w_tec) // 2, 98), info_tec, font=f_tec, fill=0)
 
     else:
-        # MODO MÚSICA NORMAL
         f_art, w_art = obtener_fuente(artista, 28) 
         draw.text(((ANCHO_PANTALLA - w_art) // 2, 2), artista, font=f_art, fill=0)
 
@@ -141,7 +143,6 @@ def actualizar_pantalla(datos):
         f_tit, w_tit = obtener_fuente(titulo, 24) 
         draw.text(((ANCHO_PANTALLA - w_tit) // 2, 64), titulo, font=f_tit, fill=0)
         
-        # Info Técnica Música
         enc = datos.get("encoded", "")
         bit = datos.get("bitrate", "")
         info_tec = f"{enc} | {bit}" if (enc and bit) else f"{enc}{bit}"
@@ -149,8 +150,29 @@ def actualizar_pantalla(datos):
             f_tec, w_tec = obtener_fuente(info_tec, 16) 
             draw.text(((ANCHO_PANTALLA - w_tec) // 2, 98), info_tec, font=f_tec, fill=0)
 
-    epd.display(epd.getbuffer(image.rotate(180)))
-    epd.sleep()
+    buffer_imagen = epd.getbuffer(image.rotate(180))
+
+    # --- CASO 2: LÓGICA DE ACTUALIZACIÓN (Full vs Parcial) ---
+    venimos_de_stop = estado_anterior in ("stop", "pause")
+
+    if venimos_de_stop or contador_parciales >= 10:
+        logging.info("-> Limpieza Total (FULL_UPDATE) y guardado de imagen base")
+        epd.init(epd.FULL_UPDATE)
+        # displayPartBaseImage hace un refresco total y guarda la imagen en RAM 
+        # para que las siguientes actualizaciones parciales calculen la diferencia.
+        epd.displayPartBaseImage(buffer_imagen) 
+        contador_parciales = 0
+    else:
+        logging.info(f"-> Actualización Parcial (PART_UPDATE) - Refresco {contador_parciales}/10")
+        epd.init(epd.PART_UPDATE)
+        epd.displayPartial(buffer_imagen)
+        contador_parciales += 1
+
+    estado_anterior = estado_actual
+    
+    # ATENCIÓN: No llamamos a epd.sleep() aquí. Si lo hacemos, la pantalla
+    # pierde la memoria RAM de la imagen base y el siguiente refresco parcial fallará.
+
 
 # --- RUTINA DE VIDA DEL SERVICIO ---
 limpieza_realizada = False
@@ -158,6 +180,7 @@ def apagar_seguro(*args):
     global limpieza_realizada
     if limpieza_realizada: return
     try:
+        logging.info("Apagando pantalla de forma segura...")
         epd = epd2in13_V2.EPD()
         epd.init(epd.FULL_UPDATE)
         epd.Clear(0xFF)
