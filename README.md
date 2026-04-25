@@ -11,7 +11,7 @@ El problema inicial consistía en la detención del sonido al ejecutar el script
 
 * **Raspberry DAC Pro:** Como reloj de bits (BCLK) para el bus I2S.  
 * **Waveshare E-Paper:** Configurado por defecto como pin de alimentación (PWR\_PIN) en la librería epdconfig.py.
-* **Estos pines solamente serian necesarios en el caso de usar mas de una tarjeta en el bus I2C.
+* Estos pines solamente serian necesarios en el caso de usar mas de una tarjeta en el bus I2C.
 
 ### **Solución Técnica**
 
