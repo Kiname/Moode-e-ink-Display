@@ -40,7 +40,7 @@ To minimize microSD card wear and improve response speed, a **caching strategy**
 
 * **Font Preloading:** ImageFont objects are loaded into RAM at the start of the script in a range of sizes (10 to 35). * **Image Cache:** The kc.bmp image is processed and stored in memory only once.
 
-* **Read Frequency:** The script monitors the lcd.txt file every 1 second (time.sleep(1)) comparing the modification date (mtime).
+
 
 ## **3. Moode Configuration**
 
