@@ -176,7 +176,12 @@ class GestorCambiosLCD(FileSystemEventHandler):
         if not event.is_directory and Path(event.src_path) == ARCHIVO_DATOS:
             time.sleep(0.1) # Breve pausa para asegurar escritura completa
             datos = self.ctrl.leer_datos()
-            if datos and datos != self.ctrl.datos_ant:
+            
+            # Si el archivo está vacío o no se pudo leer, forzamos STOP
+            if not datos:
+                datos = {"state": "stop"}
+                
+            if datos != self.ctrl.datos_ant:
                 self.ctrl.renderizar_y_mostrar(datos)
                 self.ctrl.datos_ant = datos
 
@@ -185,9 +190,13 @@ def main():
     
     # Primera ejecución
     datos_ini = controlador.leer_datos()
-    if datos_ini:
-        controlador.renderizar_y_mostrar(datos_ini)
-        controlador.datos_ant = datos_ini
+    
+    # Si al arrancar el archivo está vacío o no existe, forzamos STOP
+    if not datos_ini:
+        datos_ini = {"state": "stop"}
+        
+    controlador.renderizar_y_mostrar(datos_ini)
+    controlador.datos_ant = datos_ini
 
     # Configurar Watchdog
     observer = Observer()
