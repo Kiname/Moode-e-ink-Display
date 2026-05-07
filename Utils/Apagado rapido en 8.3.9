@@ -1,0 +1,38 @@
+Título sugerido: Guía: Solución al apagado lento en moOde Audio (Disco Red NFS)
+
+El Problema:
+En sistemas con moOde Audio, la Raspberry Pi suele tardar casi 2 minutos en apagarse o reiniciarse cuando tiene un disco de red conectado (NAS). Esto ocurre porque el sistema corta la conexión de red (WiFi o cable) antes de desmontar el disco. Como la orden de desmontaje requiere red, se queda bloqueada hasta que el sistema agota su tiempo máximo de espera (timeout de 90 segundos) y lo mata por la fuerza.
+
+La Solución:
+Hay que crear un archivo de "anulación" (override) específico para esa unidad de red para obligar al sistema a desmontarlo antes de apagar la red, y reducir su timeout a 5 segundos por seguridad.
+
+PASO 1: Crear la carpeta de configuración
+Debemos saber el nombre exacto que le ha dado el sistema a nuestro montaje (en este caso: mnt-NAS-MUSIC\x2d1.mount). Creamos la carpeta desde la terminal usando comillas simples:
+
+sudo mkdir -p '/etc/systemd/system/mnt-NAS-MUSIC\x2d1.mount.d'
+
+(Nota: El símbolo \x2d es como el sistema interpreta los guiones en los nombres de las carpetas).
+
+PASO 2: Crear el archivo override
+Creamos y abrimos el archivo de configuración dentro de esa carpeta:
+
+sudo nano '/etc/systemd/system/mnt-NAS-MUSIC\x2d1.mount.d/override.conf'
+
+PASO 3: Añadir las reglas
+Pegamos el siguiente texto exacto en el archivo en blanco:
+
+[Unit]
+After=network-online.target wpa_supplicant.service dhcpcd.service
+Requires=network-online.target
+
+[Mount]
+TimeoutSec=5
+
+Para guardar los cambios: Pulsa Ctrl + O, pulsa Enter para confirmar, y sal pulsando Ctrl + X.
+
+PASO 4: Aplicar los cambios
+Recargamos el administrador de procesos para que lea la nueva regla:
+
+sudo systemctl daemon-reload
+
+Nota para el futuro: Si alguna vez borras este disco en la interfaz de moOde y creas uno con un nombre diferente, el nombre del proceso .mount cambiará y tendrás que repetir estos pasos adaptando el nombre de la carpeta en el Paso 1.
